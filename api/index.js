@@ -8,37 +8,36 @@ module.exports = async (req, res) => {
       return res.send("❌ Please provide ?number= parameter");
     }
 
-    // ---- CHANGE THIS ONLY ↓ (YOUR API LINK) ----
+    // 👉 Change API only here
     const api = `https://ox-tawny.vercel.app/search_mobile?mobile=${number}&api_key=gavrawrand`;
-    // --------------------------------------------
+    // OR any other API that returns JSON with data array
 
-    const result = await axios.get(api);
-    const data = result.data.data;
+    const resp = await axios.get(api);
 
-    if (!data || data.length === 0) {
-      return res.send(`📱 Number: *${number}*\n❌ No data found!`);
+    const data = resp.data.data || resp.data || [];
+
+    if (!Array.isArray(data) || data.length === 0) {
+      return res.send(`📱 Number: *${number}*\n❌ No records found!`);
     }
 
-    // DESIGN OUTPUT
-    let finalOutput = `✨ *Mobile Information Found Successfully*\n\n📱 Number: *${number}*\n🔢 Total Records: *${data.length}*\n\n`;
+    let final = `✨ *Mobile Information Search Result*\n\n📱 Number: *${number}*\n📊 Total Records: *${data.length}*\n\n`;
 
-    data.forEach((item, index) => {
-      finalOutput += `━━━━━━━━━━━━━━━━━━\n`;
-      finalOutput += `🆔 Record: *${index + 1}*\n`;
-      finalOutput += `📞 Mobile: ${item["📞 Mobile"] || "N/A"}\n`;
-      finalOutput += `👤 Name: ${item["👤 Name"] || "Not Available"}\n`;
-      finalOutput += `🧾 Father Name: ${item["🧾 Father Name"] || "N/A"}\n`;
-      finalOutput += `🌍 Circle: ${item["🌍 Circle"] || "Unknown"}\n`;
-      finalOutput += `📌 Address: ${item["📌 Address"]?.trim() || "Not Provided"}\n`;
-      finalOutput += `☎️ Alternate No: ${item["☎️ Alternate No"] || "None"}\n`;
-      finalOutput += `━━━━━━━━━━━━━━━━━━\n\n`;
+    data.forEach((record, i) => {
+      final += `━━━━━━━━━━━━━━━━━━\n`;
+      final += `🆔 Record: *${i + 1}*\n`;
+
+      Object.keys(record).forEach(key => {
+        final += `${key}: ${record[key] || "N/A"}\n`;
+      });
+
+      final += `━━━━━━━━━━━━━━━━━━\n\n`;
     });
 
-    finalOutput += `👨‍💻 Developer: *🚀 Pravin Mishra*`;
+    final += `👨‍💻 Developer: *🚀 Pravin Mishra*`;
 
-    res.send(finalOutput);
+    res.send(final);
 
-  } catch (err) {
-    res.send(`❌ API Error!\n\n${err.message}`);
+  } catch (error) {
+    res.send(`❌ API Error!\n\n${error.message}`);
   }
 };
