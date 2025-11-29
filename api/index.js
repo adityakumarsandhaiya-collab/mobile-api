@@ -5,38 +5,40 @@ module.exports = async (req, res) => {
     const number = req.query.number;
 
     if (!number) {
-      return res.json({
-        status: false,
-        message: "❌ Please provide ?number=mobile_number",
-      });
+      return res.send("❌ Please provide ?number= parameter");
     }
 
+    // ---- CHANGE THIS ONLY ↓ (YOUR API LINK) ----
     const api = `https://ox-tawny.vercel.app/search_mobile?mobile=${number}&api_key=gavrawrand`;
+    // --------------------------------------------
+
     const result = await axios.get(api);
+    const data = result.data.data;
 
-    const data = result.data.data?.map((item) => ({
-      "📞 Mobile": item.mobile || "N/A",
-      "👤 Name": item.name || "N/A",
-      "🧾 Father Name": item.fname || "N/A",
-      "🌍 Circle": item.circle || "N/A",
-      "📌 Address": item.address?.replace(/!/g, " ") || "N/A",
-      "☎️ Alternate No": item.alt || "N/A",
-    }));
+    if (!data || data.length === 0) {
+      return res.send(`📱 Number: *${number}*\n❌ No data found!`);
+    }
 
-    res.json({
-      status: true,
-      number,
-      count: data.length,
-      data,
-      developer: "🚀 Pravin Mishra",
-      message: "✨ Data fetched successfully"
+    // DESIGN OUTPUT
+    let finalOutput = `✨ *Mobile Information Found Successfully*\n\n📱 Number: *${number}*\n🔢 Total Records: *${data.length}*\n\n`;
+
+    data.forEach((item, index) => {
+      finalOutput += `━━━━━━━━━━━━━━━━━━\n`;
+      finalOutput += `🆔 Record: *${index + 1}*\n`;
+      finalOutput += `📞 Mobile: ${item["📞 Mobile"] || "N/A"}\n`;
+      finalOutput += `👤 Name: ${item["👤 Name"] || "Not Available"}\n`;
+      finalOutput += `🧾 Father Name: ${item["🧾 Father Name"] || "N/A"}\n`;
+      finalOutput += `🌍 Circle: ${item["🌍 Circle"] || "Unknown"}\n`;
+      finalOutput += `📌 Address: ${item["📌 Address"]?.trim() || "Not Provided"}\n`;
+      finalOutput += `☎️ Alternate No: ${item["☎️ Alternate No"] || "None"}\n`;
+      finalOutput += `━━━━━━━━━━━━━━━━━━\n\n`;
     });
+
+    finalOutput += `👨‍💻 Developer: *🚀 Pravin Mishra*`;
+
+    res.send(finalOutput);
 
   } catch (err) {
-    res.json({
-      status: false,
-      message: "⚠️ API Error",
-      error: err.message,
-    });
+    res.send(`❌ API Error!\n\n${err.message}`);
   }
 };
